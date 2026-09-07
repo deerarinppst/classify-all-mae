@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>มหาสนุกชั้นวางของ มาตราตัวสะกด</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Sarabun & Kanit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;700;800;900&family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Sarabun', sans-serif;
+      background: radial-gradient(circle at 50% 30%, #fff7ed 0%, #fed7aa 60%, #fdba74 100%);
+      color: #332211;
+    }
+
+    .font-display {
+      font-family: 'Kanit', sans-serif;
+    }
+
+    /* Market Background Pattern */
+    .market-bg-pattern {
+      background-image: 
+        radial-gradient(circle, rgba(249, 115, 22, 0.08) 1.5px, transparent 1.5px),
+        radial-gradient(circle, rgba(234, 88, 12, 0.05) 1.5px, transparent 1.5px);
+      background-size: 28px 28px;
+      background-position: 0 0, 14px 14px;
+    }
+
+    /* Wooden Market Counter Surface */
+    .wood-table-surface {
+      background: linear-gradient(180deg, #bb7e43 0%, #9c602a 60%, #7d481b 100%);
+      box-shadow: 
+        inset 0 4px 8px rgba(255, 255, 255, 0.35),
+        inset 0 -6px 12px rgba(0, 0, 0, 0.4),
+        0 12px 24px rgba(0, 0, 0, 0.25);
+      border: 3px solid #633611;
+      border-radius: 20px;
+      position: relative;
+    }
+
+    /* PURE DIE-CUT STICKER STYLING */
+    .diecut-sticker {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      cursor: -webkit-grab;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: absolute;
+      touch-action: none;
+      z-index: 10;
+    }
+
+    .diecut-sticker:active,
+    .diecut-sticker.is-dragging {
+      cursor: grabbing;
+      cursor: -webkit-grabbing;
+      z-index: 9999 !important;
+      transform: scale(1.15) !important;
+      filter: drop-shadow(0 16px 20px rgba(0, 0, 0, 0.45));
+    }
+
+    /* Die-Cut Icon (Large Emoji with White Outline & Realistic Drop Shadow) */
+    .diecut-icon {
+      font-size: clamp(3.2rem, 5.5vw, 5.2rem);
+      line-height: 1;
+      display: block;
+      filter: 
+        drop-shadow(2px 0 0 #ffffff)
+        drop-shadow(-2px 0 0 #ffffff)
+        drop-shadow(0 2px 0 #ffffff)
+        drop-shadow(0 -2px 0 #ffffff)
+        drop-shadow(2px 2px 0 #ffffff)
+        drop-shadow(-2px -2px 0 #ffffff)
+        drop-shadow(0 6px 8px rgba(0, 0, 0, 0.22));
+      transition: transform 0.15s ease;
+      pointer-events: none;
+    }
+
+    /* Die-Cut Thai Word Label */
+    .diecut-text {
+      margin-top: 2px;
+      font-family: 'Kanit', sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.15rem, 1.9vw, 1.7rem);
+      color: #1e293b;
+      letter-spacing: 0.5px;
+      text-shadow: 
+        2.5px 2.5px 0 #ffffff,
+        -2.5px -2.5px 0 #ffffff,
+        2.5px -2.5px 0 #ffffff,
+        -2.5px 2.5px 0 #ffffff,
+        0 3px 6px rgba(0, 0, 0, 0.35);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* Highlight Ending Consonant */
+    .highlight-ending {
+      color: #dc2626 !important;
+      display: inline-block;
+      transform: scale(1.2);
+      animation: pulseEnding 0.6s infinite alternate;
+    }
+
+    @keyframes pulseEnding {
+      0% { transform: scale(1.15); filter: drop-shadow(0 0 2px #ef4444); }
+      100% { transform: scale(1.35); filter: drop-shadow(0 0 8px #dc2626); }
+    }
+
+    /* PLACED ITEMS (INSIDE TRAY OR SHELF) */
+    .placed-item {
+      position: absolute;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      animation: dropSettle 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .placed-item .diecut-icon {
+      font-size: clamp(2.4rem, 3.8vw, 3.8rem);
+      filter: 
+        drop-shadow(1.5px 0 0 #ffffff)
+        drop-shadow(-1.5px 0 0 #ffffff)
+        drop-shadow(0 1.5px 0 #ffffff)
+        drop-shadow(0 -1.5px 0 #ffffff)
+        drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+    }
+
+    .placed-item .diecut-text {
+      font-size: clamp(0.95rem, 1.4vw, 1.3rem);
+      margin-top: 1px;
+    }
+
+    @keyframes dropSettle {
+      0% {
+        transform: translate(-50%, -80%) scale(1.3);
+        opacity: 0.4;
+      }
+      70% {
+        transform: translate(-50%, -48%) scale(0.95);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+    /* 3D REALISTIC FRUIT TRAYS (6 TRAYS GRID) */
+    .realistic-3d-tray {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      padding: 8px 10px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+
+    /* Tray Themes with Deep 3D Shadow Rims */
+    .tray-theme-กกา {
+      background: linear-gradient(180deg, #fef08a 0%, #facc15 60%, #ca8a04 100%);
+      border: 4px solid #a16207;
+      box-shadow: 0 10px 0 #713f12, 0 14px 18px rgba(0,0,0,0.3);
+    }
+    .tray-theme-กก {
+      background: linear-gradient(180deg, #fca5a5 0%, #ef4444 60%, #b91c1c 100%);
+      border: 4px solid #991b1b;
+      box-shadow: 0 10px 0 #7f1d1d, 0 14px 18px rgba(0,0,0,0.3);
+    }
+    .tray-theme-กง {
+      background: linear-gradient(180deg, #86efac 0%, #22c55e 60%, #15803d 100%);
+      border: 4px solid #166534;
+      box-shadow: 0 10px 0 #14532d, 0 14px 18px rgba(0,0,0,0.3);
+    }
+    .tray-theme-กด {
+      background: linear-gradient(180deg, #93c5fd 0%, #3b82f6 60%, #1d4ed8 100%);
+      border: 4px solid #1e40af;
+      box-shadow: 0 10px 0 #1e3a8a, 0 14px 18px rgba(0,0,0,0.3);
+    }
+    .tray-theme-กน {
+      background: linear-gradient(180deg, #d8b4fe 0%, #a855f7 60%, #7e22ce 100%);
+      border: 4px solid #6b21a8;
+      box-shadow: 0 10px 0 #581c87, 0 14px 18px rgba(0,0,0,0.3);
+    }
+    .tray-theme-กบ {
+      background: linear-gradient(180deg, #fdba74 0%, #f97316 60%, #c2410c 100%);
+      border: 4px solid #9a3412;
+      box-shadow: 0 10px 0 #7c2d12, 0 14px 18px rgba(0,0,0,0.3);
+    }
+    .tray-theme-กม {
+      background: linear-gradient(180deg, #f9a8d4 0%, #ec4899 60%, #be185d 100%);
+      border: 4px solid #9d174d;
+      box-shadow: 0 10px 0 #831843, 0 14px 18px rgba(0,0,0,0.3);
+    }
+    .tray-theme-เกย {
+      background: linear-gradient(180deg, #67e8f9 0%, #06b6d4 60%, #0e7490 100%);
+      border: 4px solid #155e75;
+      box-shadow: 0 10px 0 #164e63, 0 14px 18px rgba(0,0,0,0.3);
+    }
+    .tray-theme-เกอว {
+      background: linear-gradient(180deg, #bef264 0%, #84cc16 60%, #4d7c0f 100%);
+      border: 4px solid #3f6212;
+      box-shadow: 0 10px 0 #365314, 0 14px 18px rgba(0,0,0,0.3);
+    }
+
+    /* Recessed Tray Basin (พื้นด้านในที่มีความลึกและเงา) */
+    .tray-basin {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.28);
+      box-shadow: 
+        inset 0 6px 10px rgba(0, 0, 0, 0.28),
+        inset 0 -2px 4px rgba(255, 255, 255, 0.4);
+      border-top: 2px solid rgba(0, 0, 0, 0.15);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+      overflow: hidden;
+    }
+
+    /* Stand Sign on Tray / Shelf Plaque (NO consonant list) */
+    .tray-sign-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+      border: 2px solid #78350f;
+      border-bottom: 3.5px solid #451a03;
+      border-radius: 10px;
+      padding: 2px 14px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+      z-index: 25;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* Lower 3D Tray Lip */
+    .tray-front-lip {
+      height: 6px;
+      width: 85%;
+      margin: 3px auto 0 auto;
+      border-radius: 8px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.1) 100%);
+      pointer-events: none;
+    }
+
+    /* 3-TIER REALISTIC WOODEN SHELVES */
+    .wooden-shelf-unit {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      width: 100%;
+      gap: 12px;
+      padding: 8px 10px 12px 10px;
+      background: linear-gradient(180deg, #78350f 0%, #592408 100%);
+      border: 6px solid #451a03;
+      border-radius: 20px;
+      box-shadow: 
+        inset 0 4px 12px rgba(0, 0, 0, 0.5),
+        0 10px 20px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    /* Individual Shelf Plank Layer */
+    .shelf-tier-row {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, #381a07 0%, #522709 75%, #69330d 100%);
+      border-radius: 14px;
+      border: 2px solid #291204;
+      box-shadow: inset 0 6px 14px rgba(0, 0, 0, 0.65);
+      overflow: visible;
+      transition: transform 0.2s ease;
+    }
+
+    /* Shelf Tag Plaque (NO consonant hints) */
+    .shelf-tier-tag {
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+      border: 2px solid #854d0e;
+      border-bottom: 3.5px solid #543108;
+      border-radius: 12px;
+      padding: 2px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      z-index: 25;
+      pointer-events: none;
+    }
+
+    /* Wooden Front Ledge on each tier */
+    .shelf-wooden-plank {
+      height: 14px;
+      width: 100%;
+      background: linear-gradient(180deg, #d97706 0%, #b45309 40%, #78350f 100%);
+      border-top: 2px solid #fbbf24;
+      border-bottom: 3px solid #451a03;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+    }
+
+    /* Drag Hover Highlight on Tray / Shelf */
+    .drop-target.drag-hover {
+      transform: scale(1.02);
+      filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.85));
+    }
+
+    /* Shake Animation for Wrong Answer */
+    @keyframes stickerShake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-10px, 0) rotate(-6deg); }
+      40% { transform: translate(10px, 0) rotate(6deg); }
+      60% { transform: translate(-8px, 0) rotate(-4deg); }
+      80% { transform: translate(6px, 0) rotate(4deg); }
+    }
+
+    .shake-animation {
+      animation: stickerShake 0.45s ease-in-out;
+    }
+
+    /* Floating speech bubble */
+    .speech-bubble-tail::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 24px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid #ffffff;
+    }
+  </style>
+</head>
+<body class="market-bg-pattern flex flex-col justify-between">
+  <!-- TOP HEADER (ภารกิจ, คะแนน, ชีวิต, ความคืบหน้า) -->
+  <header class="w-full bg-gradient-to-r from-amber-600 via-orange-500 to-amber-700 text-white px-3 py-1.5 shadow-md flex items-center justify-between z-30 border-b-4 border-amber-800">
+    <!-- Left Logo & Title -->
+    <div class="flex items-center gap-2">
+      <span class="text-2xl drop-shadow-sm">🍎</span>
+      <div>
+        <h1 class="font-display font-black text-sm md:text-lg text-amber-100 tracking-wide leading-tight drop-shadow">
+          มหาสนุกมาตราตัวสะกด
+        </h1>
+        <p class="text-[10px] md:text-xs text-amber-200/90 font-medium">ภารกิจ: นำคำศัพท์จัดเข้าชั้นให้ถูกมาตรา!</p>
+      </div>
+    </div>
+
+    <!-- Center Mode Switch / Info -->
+    <div class="hidden sm:flex items-center gap-2 bg-amber-900/40 px-3 py-1 rounded-full border border-amber-400/30">
+      <span id="currentModeLabel" class="text-xs font-bold text-amber-200 font-display">🛒 โหมด: ชั้นวาง 3 ชั้น</span>
+    </div>
+
+    <!-- Right Stats & Buttons -->
+    <div class="flex items-center gap-2 md:gap-3">
+      <!-- Score -->
+      <div class="bg-amber-900/60 px-2.5 py-1 rounded-xl border border-amber-300/40 flex items-center gap-1.5 shadow-inner">
+        <span class="text-sm">⭐</span>
+        <span id="scoreText" class="font-display font-black text-sm md:text-base text-yellow-300">0</span>
+      </div>
+
+      <!-- Combo Badge -->
+      <div id="comboBadge" class="hidden bg-red-600 text-white px-2 py-0.5 rounded-full font-display font-extrabold text-xs shadow-md animate-bounce">
+        🔥 COMBO x2
+      </div>
+
+      <!-- Hearts -->
+      <div class="flex items-center gap-0.5 text-base md:text-lg" id="heartsContainer">
+        <span class="drop-shadow">❤️</span>
+        <span class="drop-shadow">❤️</span>
+        <span class="drop-shadow">❤️</span>
+      </div>
+
+      <!-- Hint Button -->
+      <button id="hintBtn" onclick="useHint()" class="bg-gradient-to-b from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-amber-950 font-bold px-2.5 py-1 rounded-xl shadow border-2 border-yellow-200 text-xs flex items-center gap-1 active:scale-95 transition">
+        <span>💡</span>
+        <span class="hidden md:inline">ช่วยฉัน</span>
+        <span id="hintCountBadge" class="bg-amber-950 text-yellow-300 px-1.5 py-0.2 rounded-full text-[10px]">3</span>
+      </button>
+
+      <!-- Menu Button -->
+      <button onclick="toggleModal('menuModal', true)" class="bg-amber-800 hover:bg-amber-700 text-amber-100 p-1.5 rounded-xl border border-amber-400/40 shadow active:scale-95 transition" title="เมนูหลัก">
+        ⚙️
+      </button>
+    </div>
+  </header>
+
+  <!-- PROGRESS BAR -->
+  <div class="w-full bg-amber-950/40 h-2 relative">
+    <div id="progressBar" class="h-full bg-gradient-to-r from-lime-400 to-emerald-400 transition-all duration-300 rounded-r-full shadow" style="width: 0%;"></div>
+  </div>
+
+  <!-- MAIN GAMEPLAY AREA (TWO COLUMNS: LEFT TABLE, RIGHT TRAY/SHELF) -->
+  <main class="flex-1 w-full p-2 md:p-3 flex flex-col md:flex-row gap-2.5 md:gap-3 overflow-hidden">
+    <!-- LEFT: WOODEN TABLE WITH SCATTERED DIECUT ITEMS -->
+    <section class="w-full md:w-[42%] lg:w-[40%] flex flex-col h-[40%] md:h-full wood-table-surface p-2 shadow-xl">
+      <div class="flex items-center justify-between px-2 py-1 border-b border-amber-800/40 bg-amber-950/20 rounded-lg">
+        <div class="flex items-center gap-1.5">
+          <span class="text-lg">🛒</span>
+          <span class="font-display font-black text-xs md:text-sm text-amber-100">โต๊ะสินค้ารอจัด</span>
+        </div>
+        <span id="itemsRemainBadge" class="text-[11px] font-bold text-amber-200 bg-amber-900/60 px-2 py-0.5 rounded-full border border-amber-400/30">
+          เหลือ 0 ชิ้น
+        </span>
+      </div>
+
+      <!-- Organic Scattered Surface Area -->
+      <div id="stickerTableSurface" class="relative flex-1 w-full overflow-hidden mt-1 rounded-xl bg-amber-900/10">
+        <!-- Pure die-cut stickers will be dynamically placed here by JS -->
+      </div>
+    </section>
+
+    <!-- RIGHT: ANSWER ACCEPT AREA (3-TIER SHELVES OR 6 3D TRAYS) -->
+    <section class="w-full md:w-[58%] lg:w-[60%] flex flex-col h-[60%] md:h-full bg-amber-950/25 rounded-2xl p-2 md:p-2.5 border-2 border-amber-900/40 shadow-xl overflow-hidden">
+      <!-- Title & Stage Tag -->
+      <div class="flex items-center justify-between px-2 py-1 bg-amber-950/40 rounded-xl mb-1.5 border border-amber-800/50">
+        <div class="flex items-center gap-1.5">
+          <span id="stageIcon" class="text-base">🏪</span>
+          <span id="stageTitle" class="font-display font-black text-xs md:text-sm text-amber-100">
+            ชั้นวางสินค้าซูเปอร์มาร์เก็ต (3 ชั้น)
+          </span>
+        </div>
+        <span class="text-[11px] font-bold text-amber-200">ลากสติกเกอร์มาวางให้ตรงมาตรา</span>
+      </div>
+
+      <!-- Dynamic Shelf or Tray Container -->
+      <div id="dropZoneContainer" class="flex-1 w-full h-full relative overflow-hidden flex flex-col">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+  </main>
+  <!-- BOTTOM FOOTER & MASCOT -->
+  <footer class="w-full px-3 py-1 bg-amber-900/40 border-t border-amber-700/30 flex items-center justify-between text-xs text-amber-950">
+    <!-- Assistant Cat Mascot -->
+    <div class="flex items-center gap-2">
+      <span class="text-2xl drop-shadow animate-bounce">🐱</span>
+      <div class="relative bg-white text-slate-800 font-bold px-3 py-1 rounded-xl shadow border border-amber-300 speech-bubble-tail text-xs">
+        <span id="mascotSpeech">สวัสดีจ้า! มาช่วยกันจัดสินค้าเข้าถาดและชั้นวางให้ถูกต้องนะ 🛒</span>
+      </div>
+    </div>
+
+    <!-- Quick Mode Toggle Buttons -->
+    <div class="flex items-center gap-2">
+      <button onclick="switchGameMode('shelves')" id="modeBtn_shelves" class="px-2.5 py-1 rounded-lg font-display font-bold text-xs bg-amber-200 text-amber-950 border border-amber-400 shadow-sm transition">
+        🏪 ชั้นวาง 3 ชั้น
+      </button>
+      <button onclick="switchGameMode('fruitTray')" id="modeBtn_fruitTray" class="px-2.5 py-1 rounded-lg font-display font-bold text-xs bg-amber-800 text-amber-200 border border-amber-700 shadow-sm transition">
+        🧺 ถาดผลไม้ 6 ถาด
+      </button>
+    </div>
+  </footer>
+
+  <!-- FLOATING FEEDBACK POPUP -->
+  <div id="floatingToast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-all duration-300 opacity-0 scale-75 z-50 flex flex-col items-center">
+    <div id="toastInner" class="px-6 py-3 rounded-2xl shadow-2xl font-display font-black text-lg md:text-2xl text-center border-4">
+      ข้อความแจ้งเตือน
+    </div>
+  </div>
+
+  <!-- MODALS (MENU, GAME OVER, SUMMARY) -->
+  <!-- MAIN MENU MODAL -->
+  <div id="menuModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-gradient-to-b from-amber-50 to-orange-100 rounded-3xl border-4 border-amber-600 p-5 md:p-6 w-full max-w-lg shadow-2xl">
+      <div class="text-center mb-4">
+        <h2 class="font-display font-black text-2xl md:text-3xl text-amber-950">🍎 มหาสนุกชั้นวางของ</h2>
+        <p class="text-amber-800 font-medium text-sm">เกมจำแนกมาตราตัวสะกดภาษาไทยสำหรับเด็ก</p>
+      </div>
+
+      <!-- Mode Cards -->
+      <div class="space-y-2 mb-4">
+        <button onclick="selectModeFromMenu('shelves')" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-amber-100 border-2 border-amber-300 shadow flex items-center gap-3 transition">
+          <span class="text-3xl">🏪</span>
+          <div>
+            <div class="font-display font-black text-amber-900 text-sm md:text-base">ด่านชั้นวางของ 3 ชั้น</div>
+            <div class="text-xs text-amber-700 font-medium">จัดสินค้าขึ้นชั้นวางซูเปอร์มาร์เก็ต 3 ระดับ (3 มาตรา)</div>
+          </div>
+        </button>
+
+        <button onclick="selectModeFromMenu('fruitTray')" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-amber-100 border-2 border-amber-300 shadow flex items-center gap-3 transition">
+          <span class="text-3xl">🧺</span>
+          <div>
+            <div class="font-display font-black text-amber-900 text-sm md:text-base">ด่านถาดผลไม้ 6 ถาด</div>
+            <div class="text-xs text-amber-700 font-medium">จัดผลไม้ลงถาด 3 มิติ 6 ถาดสดชื่นรอบโต๊ะ</div>
+          </div>
+        </button>
+
+        <!-- Custom Practice Mode Selector -->
+        <button onclick="toggleCustomSection()" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-amber-100 border-2 border-amber-300 shadow flex items-center gap-3 transition">
+          <span class="text-3xl">📚</span>
+          <div>
+            <div class="font-display font-black text-amber-900 text-sm md:text-base">โหมดฝึกเลือกมาตราเอง</div>
+            <div class="text-xs text-amber-700 font-medium">ติ๊กเลือกมาตราที่ต้องการฝึกฝนได้ตามใจ</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Custom Checkboxes -->
+      <div id="customCatBox" class="hidden bg-amber-200/50 p-3 rounded-2xl border border-amber-400 mb-4">
+        <div class="text-xs font-bold text-amber-900 mb-2">เลือกมาตราที่ต้องการ:</div>
+        <div class="grid grid-cols-3 gap-2 text-xs font-bold text-amber-950" id="customCheckboxes">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="startFreshRound(); toggleModal('menuModal', false);" class="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-display font-black py-2.5 rounded-2xl shadow-lg border-2 border-emerald-300 text-base">
+          เริ่มเล่นเลย! 🚀
+        </button>
+        <button onclick="toggleModal('menuModal', false)" class="bg-amber-300 hover:bg-amber-400 text-amber-950 font-bold px-4 py-2.5 rounded-2xl">
+          ปิด
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- GAME OVER / REST MODAL -->
+  <div id="restModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-gradient-to-b from-amber-50 to-orange-100 rounded-3xl border-4 border-amber-500 p-6 w-full max-w-md shadow-2xl text-center">
+      <span class="text-5xl mb-2 block">🧃</span>
+      <h2 class="font-display font-black text-2xl text-amber-950 mb-1">พักเหนื่อยสักครู่นะ!</h2>
+      <p class="text-amber-800 text-sm mb-4">
+        หัวใจหมดแล้วจ้า ไม่เป็นไรน้า การฝึกฝนบ่อย ๆ จะทำให้เก่งขึ้นแน่นอน ✨
+      </p>
+
+      <div class="space-y-2">
+        <button onclick="startFreshRound(); toggleModal('restModal', false);" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white font-display font-black py-2.5 rounded-2xl shadow border-2 border-amber-300">
+          🔄 เริ่มเล่นใหม่อีกครั้ง
+        </button>
+        <button onclick="reviewMistakesMode()" id="reviewBtnInRest" class="hidden w-full bg-purple-600 hover:bg-purple-500 text-white font-display font-bold py-2.5 rounded-2xl shadow">
+          📚 ทบทวนคำที่เคยสับสน
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY VICTORY MODAL -->
+  <div id="victoryModal" class="fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-gradient-to-b from-amber-50 via-yellow-50 to-orange-100 rounded-3xl border-4 border-yellow-500 p-5 md:p-6 w-full max-w-lg shadow-2xl max-h-[92vh] flex flex-col">
+      <div class="text-center mb-3">
+        <span class="text-4xl block">🏆</span>
+        <h2 class="font-display font-black text-2xl md:text-3xl text-amber-950">🎉 ภารกิจสำเร็จแล้ว!</h2>
+        <p class="text-xs md:text-sm text-amber-800 font-bold">วันนี้คุณเป็นสุดยอดนักจัดของภาษาไทย!</p>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-3 gap-2 bg-amber-100/70 p-3 rounded-2xl border border-amber-300 mb-3 text-center">
+        <div>
+          <div class="text-[11px] text-amber-800 font-bold">คะแนนรวม</div>
+          <div id="summaryScore" class="font-display font-black text-xl text-amber-950">0</div>
+        </div>
+        <div>
+          <div class="text-[11px] text-amber-800 font-bold">Combo สูงสุด</div>
+          <div id="summaryCombo" class="font-display font-black text-xl text-red-600">x0</div>
+        </div>
+        <div>
+          <div class="text-[11px] text-amber-800 font-bold">ใช้ Hint</div>
+          <div id="summaryHints" class="font-display font-black text-xl text-amber-800">0 ครั้ง</div>
+        </div>
+      </div>
+
+      <!-- Breakdown Table -->
+      <div class="flex-1 overflow-y-auto bg-white rounded-2xl border border-amber-300 p-2 mb-3">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-amber-200 text-amber-900 font-display">
+              <th class="py-1">มาตรา</th>
+              <th class="py-1 text-center">จำนวนคำที่จัด</th>
+              <th class="py-1">คำศัพท์ตัวอย่าง</th>
+            </tr>
+          </thead>
+          <tbody id="summaryBreakdownTable">
+            <!-- Injected via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button onclick="startFreshRound(); toggleModal('victoryModal', false);" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-display font-black py-2.5 rounded-2xl shadow">
+          🔄 เล่นรอบใหม่
+        </button>
+        <button onclick="reviewMistakesMode()" id="reviewBtnInSummary" class="hidden flex-1 bg-purple-600 hover:bg-purple-500 text-white font-display font-bold py-2.5 rounded-2xl shadow">
+          📚 ฝึกคำที่ยังสับสน
+        </button>
+        <button onclick="toggleModal('menuModal', true); toggleModal('victoryModal', false);" class="bg-amber-300 hover:bg-amber-400 text-amber-950 font-bold px-4 py-2.5 rounded-2xl">
+          🏠 เมนูหลัก
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
+    /* 100+ ACCURATE THAI VOCABULARY DATABASE (CLASSIFIED BY FINAL SOUND) */
+    const THAI_WORDS_DB = [
+      /* 1. แม่ ก กา (ไม่มีตัวสะกด) */
+      { word: "ปลา", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "🐟", hint: "สระอา ไม่มีตัวสะกด" },
+      { word: "มือ", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "🖐️", hint: "สระอือ ไม่มีตัวสะกด" },
+      { word: "โต๊ะ", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "🪵", hint: "สระโอะ ไม่มีตัวสะกด" },
+      { word: "เรือ", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "⛵", hint: "สระเอือ ไม่มีตัวสะกด" },
+      { word: "ภูเขา", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "⛰️", hint: "ไม่มีตัวสะกด" },
+      { word: "น้ำ", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "💧", hint: "สระอำ ไม่มีตัวสะกด" },
+      { word: "มะระ", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "🥒", hint: "ไม่มีตัวสะกด" },
+      { word: "ตะกร้อ", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "🏐", hint: "ไม่มีตัวสะกด" },
+      { word: "หมี", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "🐻", hint: "สระอี ไม่มีตัวสะกด" },
+      { word: "ไก่", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "🐔", hint: "สระไอ ไม่มีตัวสะกด" },
+      { word: "ม้า", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "🐴", hint: "สระอา ไม่มีตัวสะกด" },
+      { word: "เสือ", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "🐯", hint: "สระเอือ ไม่มีตัวสะกด" },
+
+      /* 2. แม่กก (สะกดด้วย ก, ข, ค, ฆ) */
+      { word: "นก", category: "แม่กก", finalSound: "ก", endingChar: "ก", icon: "🐦", hint: "สะกดด้วยตัว ก" },
+      { word: "หมวก", category: "แม่กก", finalSound: "ก", endingChar: "ก", icon: "👒", hint: "สะกดด้วยตัว ก" },
+      { word: "พริก", category: "แม่กก", finalSound: "ก", endingChar: "ก", icon: "🌶️", hint: "สะกดด้วยตัว ก" },
+      { word: "เค้ก", category: "แม่กก", finalSound: "ก", endingChar: "ก", icon: "🍰", hint: "สะกดด้วยตัว ก" },
+      { word: "ครก", category: "แม่กก", finalSound: "ก", endingChar: "ก", icon: "🥣", hint: "สะกดด้วยตัว ก" },
+      { word: "ดอกไม้", category: "แม่กก", finalSound: "ก", endingChar: "ก", icon: "🌸", hint: "ดอก สะกดด้วยตัว ก" },
+      { word: "เชือก", category: "แม่กก", finalSound: "ก", endingChar: "ก", icon: "🪢", hint: "สะกดด้วยตัว ก" },
+      { word: "เลข", category: "แม่กก", finalSound: "ก", endingChar: "ข", icon: "🔢", hint: "ข ออกเสียงเหมือน ก" },
+      { word: "โรค", category: "แม่กก", finalSound: "ก", endingChar: "ค", icon: "🤒", hint: "ค ออกเสียงเหมือน ก" },
+      { word: "เมฆ", category: "แม่กก", finalSound: "ก", endingChar: "ฆ", icon: "☁️", hint: "ฆ ออกเสียงเหมือน ก" },
+      { word: "สุข", category: "แม่กก", finalSound: "ก", endingChar: "ข", icon: "😊", hint: "ข ออกเสียงเหมือน ก" },
+      { word: "โชค", category: "แม่กก", finalSound: "ก", endingChar: "ค", icon: "🍀", hint: "ค ออกเสียงเหมือน ก" },
+
+      /* 3. แม่กง (สะกดด้วย ง) */
+      { word: "ลิง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "🐒", hint: "สะกดด้วยตัว ง" },
+      { word: "แมลง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "🐞", hint: "สะกดด้วยตัว ง" },
+      { word: "แตง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "🥒", hint: "สะกดด้วยตัว ง" },
+      { word: "กางเกง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "👖", hint: "สะกดด้วยตัว ง" },
+      { word: "ช้าง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "🐘", hint: "สะกดด้วยตัว ง" },
+      { word: "ผึ้ง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "🐝", hint: "สะกดด้วยตัว ง" },
+      { word: "กุ้ง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "🦐", hint: "สะกดด้วยตัว ง" },
+      { word: "ถุงเท้า", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "🧦", hint: "ถุง สะกดด้วย ง" },
+      { word: "มะม่วง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "🥭", hint: "ม่วง สะกดด้วย ง" },
+      { word: "ลองกอง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "🍇", hint: "สะกดด้วย ง" },
+      { word: "รัง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "🪺", hint: "สะกดด้วย ง" },
+      { word: "ห่วง", category: "แม่กง", finalSound: "ง", endingChar: "ง", icon: "⭕", hint: "สะกดด้วย ง" },
+
+      /* 4. แม่กด (สะกดด้วย ด, จ, ช, ซ, ฎ, ฏ, ฐ, ฑ, ฒ, ต, ถ, ท, ธ, ศ, ษ, ส) */
+      { word: "มด", category: "แม่กด", finalSound: "ด", endingChar: "ด", icon: "🐜", hint: "สะกดด้วยตัว ด" },
+      { word: "เป็ด", category: "แม่กด", finalSound: "ด", endingChar: "ด", icon: "🦆", hint: "สะกดด้วยตัว ด" },
+      { word: "ขวด", category: "แม่กด", finalSound: "ด", endingChar: "ด", icon: "🍾", hint: "สะกดด้วยตัว ด" },
+      { word: "เห็ด", category: "แม่กด", finalSound: "ด", endingChar: "ด", icon: "🍄", hint: "สะกดด้วยตัว ด" },
+      { word: "สมุด", category: "แม่กด", finalSound: "ด", endingChar: "ด", icon: "📘", hint: "สมุด สะกดด้วย ด" },
+      { word: "รถ", category: "แม่กด", finalSound: "ด", endingChar: "ถ", icon: "🚗", hint: "ถ ออกเสียงเหมือน ด" },
+      { word: "บาท", category: "แม่กด", finalSound: "ด", endingChar: "ท", icon: "🪙", hint: "ท ออกเสียงเหมือน ด" },
+      { word: "กระดาษ", category: "แม่กด", finalSound: "ด", endingChar: "ษ", icon: "📄", hint: "ษ ออกเสียงเหมือน ด" },
+      { word: "โอกาส", category: "แม่กด", finalSound: "ด", endingChar: "ส", icon: "🎟️", hint: "ส ออกเสียงเหมือน ด" },
+      { word: "พืช", category: "แม่กด", finalSound: "ด", endingChar: "ช", icon: "🌱", hint: "ช ออกเสียงเหมือน ด" },
+      { word: "ตลาด", category: "แม่กด", finalSound: "ด", endingChar: "ด", icon: "🏪", hint: "สะกดด้วย ด" },
+      { word: "เสื้อเชิ้ต", category: "แม่กด", finalSound: "ด", endingChar: "ต", icon: "👔", hint: "ต ออกเสียงเหมือน ด" },
+
+      /* 5. แม่กน (สะกดด้วย น, ณ, ญ, ร, ล, ฬ) */
+      { word: "จาน", category: "แม่กน", finalSound: "น", endingChar: "น", icon: "🍽️", hint: "สะกดด้วยตัว น" },
+      { word: "ช้อน", category: "แม่กน", finalSound: "น", endingChar: "น", icon: "🥄", hint: "สะกดด้วยตัว น" },
+      { word: "แว่นตา", category: "แม่กน", finalSound: "น", endingChar: "น", icon: "👓", hint: "แว่น สะกดด้วย น" },
+      { word: "ดินสอ", category: "แม่กน", finalSound: "น", endingChar: "น", icon: "✏️", hint: "ดิน สะกดด้วย น" },
+      { word: "น้ำตาล", category: "แม่กน", finalSound: "น", endingChar: "ล", icon: "🧂", hint: "ล ออกเสียงเหมือน น" },
+      { word: "บอล", category: "แม่กน", finalSound: "น", endingChar: "ล", icon: "⚽", hint: "ล ออกเสียงเหมือน น" },
+      { word: "บุญ", category: "แม่กน", finalSound: "น", endingChar: "ญ", icon: "🙏", hint: "ญ ออกเสียงเหมือน น" },
+      { word: "อาหาร", category: "แม่กน", finalSound: "น", endingChar: "ร", icon: "🍲", hint: "ร ออกเสียงเหมือน น" },
+      { word: "พร", category: "แม่กน", finalSound: "น", endingChar: "ร", icon: "✨", hint: "ร ออกเสียงเหมือน น" },
+      { word: "กุญแจ", category: "แม่กน", finalSound: "น", endingChar: "ญ", icon: "🔑", hint: "กุญ ออกเสียงเหมือน น" },
+      { word: "วาฬ", category: "แม่กน", finalSound: "น", endingChar: "ฬ", icon: "🐋", hint: "ฬ ออกเสียงเหมือน น" },
+      { word: "เพื่อน", category: "แม่กน", finalSound: "น", endingChar: "น", icon: "🤝", hint: "สะกดด้วยตัว น" },
+
+      /* 6. แม่กบ (สะกดด้วย บ, ป, พ, ฟ, ภ) */
+      { word: "กบ", category: "แม่กบ", finalSound: "บ", endingChar: "บ", icon: "🐸", hint: "สะกดด้วยตัว บ" },
+      { word: "จอบ", category: "แม่กบ", finalSound: "บ", endingChar: "บ", icon: "⛏️", hint: "สะกดด้วยตัว บ" },
+      { word: "ดาบ", category: "แม่กบ", finalSound: "บ", endingChar: "บ", icon: "🗡️", hint: "สะกดด้วยตัว บ" },
+      { word: "ตะเกียบ", category: "แม่กบ", finalSound: "บ", endingChar: "บ", icon: "🥢", hint: "เกียบ สะกดด้วย บ" },
+      { word: "หีบ", category: "แม่กบ", finalSound: "บ", endingChar: "บ", icon: "📦", hint: "สะกดด้วยตัว บ" },
+      { word: "รูป", category: "แม่กบ", finalSound: "บ", endingChar: "ป", icon: "🖼️", hint: "ป ออกเสียงเหมือน บ" },
+      { word: "ภาพ", category: "แม่กบ", finalSound: "บ", endingChar: "พ", icon: "📷", hint: "พ ออกเสียงเหมือน บ" },
+      { word: "ลาบ", category: "แม่กบ", finalSound: "บ", endingChar: "บ", icon: "🥗", hint: "สะกดด้วยตัว บ" },
+      { word: "ยีราฟ", category: "แม่กบ", finalSound: "บ", endingChar: "ฟ", icon: "🦒", hint: "ฟ ออกเสียงเหมือน บ" },
+      { word: "โทรศัพท์", category: "แม่กบ", finalSound: "บ", endingChar: "พ", icon: "📱", hint: "พ ออกเสียงเหมือน บ" },
+      { word: "ทัพพี", category: "แม่กบ", finalSound: "บ", endingChar: "พ", icon: "🥄", hint: "ทัพ ออกเสียงเหมือน บ" },
+      { word: "ลิป", category: "แม่กบ", finalSound: "บ", endingChar: "ป", icon: "💄", hint: "ป ออกเสียงเหมือน บ" },
+
+      /* 7. แม่กม (สะกดด้วย ม) */
+      { word: "ส้ม", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "🍊", hint: "สะกดด้วยตัว ม" },
+      { word: "ขนม", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "🍪", hint: "สะกดด้วยตัว ม" },
+      { word: "นม", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "🥛", hint: "สะกดด้วยตัว ม" },
+      { word: "ยิ้ม", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "😃", hint: "สะกดด้วยตัว ม" },
+      { word: "ร่ม", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "☂️", hint: "สะกดด้วยตัว ม" },
+      { word: "มะขาม", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "🫘", hint: "ขาม สะกดด้วย ม" },
+      { word: "ชมพู่", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "🍎", hint: "ชม สะกดด้วย ม" },
+      { word: "แก้ม", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "😊", hint: "สะกดด้วยตัว ม" },
+      { word: "ไอศกรีม", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "🍦", hint: "กรีม สะกดด้วย ม" },
+      { word: "ต้ม", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "🍲", hint: "สะกดด้วยตัว ม" },
+      { word: "เข็ม", category: "แม่กม", finalSound: "ม", endingChar: "ม", icon: "🪡", hint: "สะกดด้วยตัว ม" },
+      { word: "มะพร้าว", category: "แม่เกอว", finalSound: "ว", endingChar: "ว", icon: "🥥", hint: "พร้าว สะกดด้วย ว" },
+
+      /* 8. แม่เกย (สะกดด้วย ย) */
+      { word: "กล้วย", category: "แม่เกย", finalSound: "ย", endingChar: "ย", icon: "🍌", hint: "สะกดด้วยตัว ย" },
+      { word: "กระต่าย", category: "แม่เกย", finalSound: "ย", endingChar: "ย", icon: "🐰", hint: "ต่าย สะกดด้วย ย" },
+      { word: "หอย", category: "แม่เกย", finalSound: "ย", endingChar: "ย", icon: "🐚", hint: "สะกดด้วยตัว ย" },
+      { word: "ไฟฉาย", category: "แม่เกย", finalSound: "ย", endingChar: "ย", icon: "🔦", hint: "ฉาย สะกดด้วย ย" },
+      { word: "ควาย", category: "แม่เกย", finalSound: "ย", endingChar: "ย", icon: "🐃", hint: "สะกดด้วยตัว ย" },
+      { word: "สายสร้อย", category: "แม่เกย", finalSound: "ย", endingChar: "ย", icon: "📿", hint: "สร้อย สะกดด้วย ย" },
+      { word: "เนย", category: "แม่เกย", finalSound: "ย", endingChar: "ย", icon: "🧈", hint: "สะกดด้วยตัว ย" },
+      { word: "ใบเตย", category: "แม่เกย", finalSound: "ย", endingChar: "ย", icon: "🌿", hint: "เตย สะกดด้วย ย" },
+      { word: "ยาย", category: "แม่เกย", finalSound: "ย", endingChar: "ย", icon: "👵", hint: "สะกดด้วยตัว ย" },
+      { word: "พวงมาลัย", category: "แม่ ก กา", finalSound: "-", endingChar: "", icon: "💐", hint: "สระไอ ไม่มีตัวสะกด" },
+
+      /* 9. แม่เกอว (สะกดด้วย ว) */
+      { word: "ดาว", category: "แม่เกอว", finalSound: "ว", endingChar: "ว", icon: "⭐", hint: "สะกดด้วยตัว ว" },
+      { word: "แมว", category: "แม่เกอว", finalSound: "ว", endingChar: "ว", icon: "🐱", hint: "สะกดด้วยตัว ว" },
+      { word: "ข้าว", category: "แม่เกอว", finalSound: "ว", endingChar: "ว", icon: "🍚", hint: "สะกดด้วยตัว ว" },
+      { word: "นิ้ว", category: "แม่เกอว", finalSound: "ว", endingChar: "ว", icon: "☝️", hint: "สะกดด้วยตัว ว" },
+      { word: "แก้ว", category: "แม่เกอว", finalSound: "ว", endingChar: "ว", icon: "🥛", hint: "สะกดด้วยตัว ว" },
+      { word: "มะนาว", category: "แม่เกอว", finalSound: "ว", endingChar: "ว", icon: "🍋", hint: "นาว สะกดด้วย ว" },
+      { word: "ไข่เจียว", category: "แม่เกอว", finalSound: "ว", endingChar: "ว", icon: "🍳", hint: "เจียว สะกดด้วย ว" },
+      { word: "ลูกแก้ว", category: "แม่เกอว", finalSound: "ว", endingChar: "ว", icon: "🔮", hint: "แก้ว สะกดด้วย ว" },
+      { word: "ก๋วยเตี๋ยว", category: "แม่เกอว", finalSound: "ว", endingChar: "ว", icon: "🍜", hint: "เตี๋ยว สะกดด้วย ว" }
+    ];
+
+    /* CATEGORY METADATA (NO CONSONANT HINTS - AS REQUESTED) */
+    const ALL_CATEGORIES = ["แม่ ก กา", "แม่กก", "แม่กง", "แม่กด", "แม่กน", "แม่กบ", "แม่กม", "แม่เกย", "แม่เกอว"];
+
+    const CATEGORY_META = {
+      "แม่ ก กา": { badge: "🟡 แม่ ก กา", theme: "tray-theme-กกา" },
+      "แม่กก": { badge: "🔴 แม่กก", theme: "tray-theme-กก" },
+      "แม่กง": { badge: "🟢 แม่กง", theme: "tray-theme-กง" },
+      "แม่กด": { badge: "🔵 แม่กด", theme: "tray-theme-กด" },
+      "แม่กน": { badge: "🟣 แม่กน", theme: "tray-theme-กน" },
+      "แม่กบ": { badge: "🟠 แม่กบ", theme: "tray-theme-กบ" },
+      "แม่กม": { badge: "🩷 แม่กม", theme: "tray-theme-กม" },
+      "แม่เกย": { badge: "🟦 แม่เกย", theme: "tray-theme-เกย" },
+      "แม่เกอว": { badge: "🟩 แม่เกอว", theme: "tray-theme-เกอว" }
+    };
+    /* GAME STATE */
+    const STATE = {
+      mode: 'shelves', // 'shelves' (3-tier) or 'fruitTray' (6-tray) or 'custom'
+      activeCategories: [],
+      score: 0,
+      hearts: 3,
+      hintsRemaining: 3,
+      combo: 0,
+      maxCombo: 0,
+      totalSuccess: 0,
+      totalRoundWords: 0,
+      currentBatch: [],
+      mistakenWords: [],
+      placedHistory: {},
+      draggedItem: null
+    };
+
+    /* INITIALIZATION */
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCustomCheckboxes();
+      startFreshRound();
+    });
+
+    function toggleModal(id, show) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (show) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    }
+
+    function renderCustomCheckboxes() {
+      const container = document.getElementById('customCheckboxes');
+      container.innerHTML = ALL_CATEGORIES.map(cat => `
+        <label class="flex items-center gap-1.5 cursor-pointer bg-white/70 p-1.5 rounded-lg border border-amber-300">
+          <input type="checkbox" name="customCat" value="${cat}" class="accent-amber-600 rounded" checked>
+          <span>${cat}</span>
+        </label>
+      `).join('');
+    }
+
+    function toggleCustomSection() {
+      const box = document.getElementById('customCatBox');
+      box.classList.toggle('hidden');
+    }
+
+    function selectModeFromMenu(m) {
+      STATE.mode = m;
+      startFreshRound();
+      toggleModal('menuModal', false);
+    }
+
+    function switchGameMode(m) {
+      STATE.mode = m;
+      startFreshRound();
+    }
+    /* START FRESH ROUND */
+    function startFreshRound(customWordList = null) {
+      // Update UI button highlights
+      const btnShelves = document.getElementById('modeBtn_shelves');
+      const btnFruit = document.getElementById('modeBtn_fruitTray');
+      if (STATE.mode === 'shelves') {
+        btnShelves.className = "px-2.5 py-1 rounded-lg font-display font-bold text-xs bg-amber-200 text-amber-950 border-2 border-amber-400 shadow";
+        btnFruit.className = "px-2.5 py-1 rounded-lg font-display font-bold text-xs bg-amber-900/60 text-amber-200 border border-amber-700 shadow-sm";
+        document.getElementById('currentModeLabel').innerText = "🏪 โหมด: ชั้นวาง 3 ชั้น";
+      } else {
+        btnFruit.className = "px-2.5 py-1 rounded-lg font-display font-bold text-xs bg-amber-200 text-amber-950 border-2 border-amber-400 shadow";
+        btnShelves.className = "px-2.5 py-1 rounded-lg font-display font-bold text-xs bg-amber-900/60 text-amber-200 border border-amber-700 shadow-sm";
+        document.getElementById('currentModeLabel').innerText = "🧺 โหมด: ถาดผลไม้ 6 ถาด";
+      }
+
+      // Determine active categories
+      if (customWordList) {
+        STATE.activeCategories = Array.from(new Set(customWordList.map(w => w.category)));
+        STATE.queue = [...customWordList];
+      } else if (STATE.mode === 'shelves') {
+        // REQUIREMENT: EXACTLY 3-TIER WOODEN SHELVES (3 มาตรา)
+        const shuffled = [...ALL_CATEGORIES].sort(() => 0.5 - Math.random());
+        STATE.activeCategories = shuffled.slice(0, 3);
+        generateBatchQueue();
+      } else {
+        // REQUIREMENT: EXACTLY 6 3D FRUIT TRAYS (6 มาตรา)
+        const shuffled = [...ALL_CATEGORIES].sort(() => 0.5 - Math.random());
+        STATE.activeCategories = shuffled.slice(0, 6);
+        generateBatchQueue();
+      }
+
+      // Reset round trackers
+      STATE.score = 0;
+      STATE.hearts = 3;
+      STATE.hintsRemaining = 3;
+      STATE.combo = 0;
+      STATE.maxCombo = 0;
+      STATE.totalSuccess = 0;
+      STATE.placedHistory = {};
+      STATE.activeCategories.forEach(c => STATE.placedHistory[c] = []);
+
+      updateStatsUI();
+      renderDropZoneArea();
+      loadNextBatchOfStickers();
+      setMascotSpeech("พร้อมแล้ว! ลากสินค้าและผลไม้ไปจัดเข้าชั้นให้ถูกต้องนะ 😊");
+    }
+
+    /* GENERATE BATCH QUEUE */
+    function generateBatchQueue() {
+      let pool = [];
+      STATE.activeCategories.forEach(cat => {
+        const wordsInCat = THAI_WORDS_DB.filter(w => w.category === cat);
+        const shuffled = [...wordsInCat].sort(() => 0.5 - Math.random());
+        // Pick 2-3 words per category to create a fun round of 6-12 words
+        pool.push(...shuffled.slice(0, 2));
+      });
+      STATE.queue = pool.sort(() => 0.5 - Math.random());
+      STATE.totalRoundWords = STATE.queue.length;
+    }
+
+    /* RENDER DROP ZONE (3-TIER WOODEN SHELF OR 6 3D TRAYS) */
+    function renderDropZoneArea() {
+      const container = document.getElementById('dropZoneContainer');
+      const stageTitle = document.getElementById('stageTitle');
+      const stageIcon = document.getElementById('stageIcon');
+      container.innerHTML = "";
+
+      // 1. STAGE: 3-TIER WOODEN SHELVES
+      if (STATE.mode === 'shelves') {
+        stageTitle.innerText = "ชั้นวางสินค้าซูเปอร์มาร์เก็ต (3 ชั้น)";
+        stageIcon.innerText = "🏪";
+
+        const shelfUnit = document.createElement("div");
+        shelfUnit.className = "wooden-shelf-unit";
+
+        const tierTitles = ["ชั้นบนสุด", "ชั้นกลาง", "ชั้นล่างสุด"];
+
+        STATE.activeCategories.slice(0, 3).forEach((catName, idx) => {
+          const meta = CATEGORY_META[catName] || { badge: catName };
+
+          const tier = document.createElement("div");
+          tier.dataset.category = catName;
+          tier.className = "drop-target shelf-tier-row group";
+
+          tier.innerHTML = `
+            <!-- Shelf Tag Plaque (ONLY Category Name - NO Consonant list) -->
+            <div class="shelf-tier-tag">
+              <span class="text-[10px] font-bold text-amber-900 bg-amber-200 px-1.5 py-0.2 rounded">${tierTitles[idx]}</span>
+              <span class="font-display font-extrabold text-amber-950 text-xs md:text-sm tracking-wide">${meta.badge}</span>
+            </div>
+
+            <!-- Shelf Basin Floor (Drop Target) -->
+            <div class="flex-1 min-h-0 w-full relative shelf-placed-items flex items-center justify-center pt-2 pb-0.5 px-2">
+              <div class="text-[11px] md:text-xs text-amber-200/40 font-bold italic drop-hint pointer-events-none text-center">
+                ลากสินค้ามาวางบน ${tierTitles[idx]} 🛒
+              </div>
+            </div>
+
+            <!-- 3D Wooden Plank Bottom Ledge -->
+            <div class="shelf-wooden-plank"></div>
+          `;
+
+          shelfUnit.appendChild(tier);
+        });
+
+        container.appendChild(shelfUnit);
+        return;
+      }
+
+      // 2. STAGE: 6 3D FRUIT TRAYS
+      stageTitle.innerText = "โต๊ะวางถาดผลไม้ 3D (6 ถาด)";
+      stageIcon.innerText = "🧺";
+
+      const trayGrid = document.createElement("div");
+      // 2 rows of 3 trays snugly filling available height without scrollbar
+      trayGrid.className = "flex-1 min-h-0 h-full w-full grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-2.5 auto-rows-fr pt-2 pb-0.5 px-0.5";
+
+      STATE.activeCategories.slice(0, 6).forEach(catName => {
+        const meta = CATEGORY_META[catName] || { badge: catName, theme: "tray-theme-กกา" };
+
+        const tray = document.createElement("div");
+        tray.dataset.category = catName;
+        tray.className = `drop-target realistic-3d-tray ${meta.theme}`;
+
+        tray.innerHTML = `
+          <!-- Stand Sign Badge (ONLY Category Name - NO Consonant letters) -->
+          <div class="tray-sign-badge">
+            <span class="font-display font-extrabold text-amber-950 text-[11px] md:text-xs tracking-wide">${meta.badge}</span>
+          </div>
+
+          <!-- Recessed 3D Basin -->
+          <div class="tray-basin shelf-placed-items flex items-center justify-center">
+            <div class="text-[10px] md:text-xs text-amber-950/40 font-bold italic drop-hint pointer-events-none text-center px-1">
+              วางผลไม้ลงในถาดนี้ 🧺
+            </div>
+          </div>
+
+          <!-- 3D Front Lip Highlight -->
+          <div class="tray-front-lip"></div>
+        `;
+
+        trayGrid.appendChild(tray);
+      });
+
+      container.appendChild(trayGrid);
+    }
+    /* SCATTER DIECUT STICKERS ORGANICALLY ON WOODEN TABLE */
+    function loadNextBatchOfStickers() {
+      const surface = document.getElementById('stickerTableSurface');
+      surface.innerHTML = "";
+
+      // Pick up to 5 items to display simultaneously on table
+      if (STATE.queue.length === 0) {
+        checkRoundComplete();
+        return;
+      }
+
+      const batchCount = Math.min(5, STATE.queue.length);
+      STATE.currentBatch = STATE.queue.splice(0, batchCount);
+
+      document.getElementById('itemsRemainBadge').innerText = `เหลือ ${STATE.queue.length + STATE.currentBatch.length} ชิ้น`;
+
+      // Layout slots distributed across table (preventing overlap)
+      const slotCoords = [
+        { x: 22, y: 30 },
+        { x: 74, y: 28 },
+        { x: 48, y: 56 },
+        { x: 20, y: 76 },
+        { x: 78, y: 74 }
+      ];
+
+      STATE.currentBatch.forEach((item, idx) => {
+        const sticker = document.createElement("div");
+        sticker.className = "diecut-sticker";
+        sticker.dataset.word = item.word;
+        sticker.dataset.category = item.category;
+
+        // Add subtle random jitter for organic feel (-6% to +6% and -6° to +6°)
+        const baseCoord = slotCoords[idx % slotCoords.length];
+        const jitterX = (Math.random() - 0.5) * 8;
+        const jitterY = (Math.random() - 0.5) * 8;
+        const rot = (Math.random() - 0.5) * 12;
+
+        const posX = Math.max(12, Math.min(84, baseCoord.x + jitterX));
+        const posY = Math.max(18, Math.min(82, baseCoord.y + jitterY));
+
+        sticker.style.left = `${posX}%`;
+        sticker.style.top = `${posY}%`;
+        sticker.style.transform = `translate(-50%, -50%) rotate(${rot.toFixed(1)}deg)`;
+
+        sticker.innerHTML = `
+          <span class="diecut-icon">${item.icon}</span>
+          <span class="diecut-text" id="sticker_word_${item.word}">${item.word}</span>
+        `;
+
+        setupPointerDrag(sticker, item);
+        surface.appendChild(sticker);
+      });
+    }
+    /* SMOOTH POINTER EVENTS DRAG AND DROP (MOUSE, TOUCH, TABLET, BOARD) */
+    function setupPointerDrag(el, itemData) {
+      let isDragging = false;
+      let startX = 0, startY = 0;
+      let initLeft = 0, initTop = 0;
+      let originalTransform = el.style.transform;
+
+      el.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
+        isDragging = true;
+        el.setPointerCapture(e.pointerId);
+
+        startX = e.clientX;
+        startY = e.clientY;
+
+        // Cache absolute bounding rect
+        const rect = el.getBoundingClientRect();
+        initLeft = rect.left;
+        initTop = rect.top;
+
+        el.classList.add('is-dragging');
+        STATE.draggedItem = itemData;
+
+        // Position fixed while dragging to smoothly follow finger/cursor
+        el.style.position = 'fixed';
+        el.style.left = `${rect.left}px`;
+        el.style.top = `${rect.top}px`;
+        el.style.transform = 'scale(1.15) rotate(4deg)';
+
+        setMascotSpeech(`หยิบ "${itemData.word}" แล้ว... มาตราไหนนะ? 🤔`);
+      });
+
+      el.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        el.style.left = `${initLeft + dx}px`;
+        el.style.top = `${initTop + dy}px`;
+
+        // Check if hovering over any drop target
+        checkDropHover(e.clientX, e.clientY);
+      });
+
+      el.addEventListener('pointerup', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        el.releasePointerCapture(e.pointerId);
+        el.classList.remove('is-dragging');
+
+        // Evaluate drop target underneath
+        const targetElement = findDropTargetAt(e.clientX, e.clientY);
+        clearDropHovers();
+
+        if (targetElement) {
+          handleDropAttempt(el, itemData, targetElement);
+        } else {
+          revertStickerToTable(el, originalTransform);
+        }
+      });
+
+      el.addEventListener('pointercancel', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        el.classList.remove('is-dragging');
+        clearDropHovers();
+        revertStickerToTable(el, originalTransform);
+      });
+    }
+
+    function checkDropHover(clientX, clientY) {
+      document.querySelectorAll('.drop-target').forEach(target => {
+        const rect = target.getBoundingClientRect();
+        if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+          target.classList.add('drag-hover');
+        } else {
+          target.classList.remove('drag-hover');
+        }
+      });
+    }
+
+    function clearDropHovers() {
+      document.querySelectorAll('.drop-target').forEach(t => t.classList.remove('drag-hover'));
+    }
+
+    function findDropTargetAt(x, y) {
+      const targets = document.querySelectorAll('.drop-target');
+      for (let t of targets) {
+        const r = t.getBoundingClientRect();
+        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+          return t;
+        }
+      }
+      return null;
+    }
+
+    function revertStickerToTable(el, originalTransform) {
+      el.style.position = 'absolute';
+      el.style.left = el.style.left;
+      el.style.top = el.style.top;
+      // Animate back to original relative slot
+      el.style.transition = 'all 0.25s ease-out';
+      setTimeout(() => {
+        el.style.position = 'absolute';
+        loadNextBatchOfStickers(); // cleanly reset positions
+      }, 200);
+    }
+    /* HANDLE DROP ATTEMPT */
+    function handleDropAttempt(stickerEl, itemData, targetElement) {
+      const chosenCategory = targetElement.dataset.category;
+
+      if (chosenCategory === itemData.category) {
+        // === CORRECT ANSWER ===
+        handleCorrectAnswer(stickerEl, itemData, targetElement);
+      } else {
+        // === WRONG ANSWER ===
+        handleWrongAnswer(stickerEl, itemData);
+      }
+    }
+
+    /* CORRECT ANSWER FLOW */
+    function handleCorrectAnswer(stickerEl, itemData, targetElement) {
+      // Score & Combo
+      STATE.score += 10;
+      STATE.combo += 1;
+      if (STATE.combo > STATE.maxCombo) STATE.maxCombo = STATE.combo;
+      STATE.totalSuccess += 1;
+
+      // Remove hint text in basin/shelf if present
+      const hint = targetElement.querySelector('.drop-hint');
+      if (hint) hint.style.display = 'none';
+
+      // Confetti celebration
+      launchConfetti();
+
+      // Toast notification
+      showToast(`เก่งมาก! ${itemData.word} → ${itemData.category} 🎉`, true);
+      setMascotSpeech(`เยี่ยมยอด! "${itemData.word}" อยู่ใน ${itemData.category} ถูกต้องแล้ว! ✨`);
+
+      // Record placed item
+      if (!STATE.placedHistory[itemData.category]) STATE.placedHistory[itemData.category] = [];
+      STATE.placedHistory[itemData.category].push(itemData);
+
+      // PLACE SCATTERED ITEM INSIDE TRAY/SHELF (LARGE & ORGANIC)
+      placeItemNaturallyInTarget(targetElement, itemData);
+
+      // Remove sticker from table
+      stickerEl.remove();
+
+      // Check batch completion
+      const remainingOnTable = document.querySelectorAll('#stickerTableSurface .diecut-sticker');
+      if (remainingOnTable.length === 0) {
+        setTimeout(loadNextBatchOfStickers, 400);
+      }
+
+      updateStatsUI();
+      checkRoundComplete();
+    }
+
+    /* PLACE ITEM NATURALLY INSIDE SHELF OR TRAY (NO RIGID GRID, LARGE VISIBILITY) */
+    function placeItemNaturallyInTarget(targetElement, itemData) {
+      const container = targetElement.querySelector('.shelf-placed-items') || targetElement;
+      
+      const placed = document.createElement("div");
+      placed.className = "placed-item";
+
+      // Random scattered positions inside basin (-5° to +5° rotation, gentle offset)
+      const existingCount = container.querySelectorAll('.placed-item').length;
+      
+      // Calculate staggered positions so items don't hide one another
+      const offsets = [
+        { x: 30, y: 50 },
+        { x: 70, y: 48 },
+        { x: 50, y: 54 },
+        { x: 20, y: 52 },
+        { x: 80, y: 52 }
+      ];
+      const pos = offsets[existingCount % offsets.length];
+      const rot = (Math.random() - 0.5) * 10; // -5 to +5 deg
+
+      placed.style.left = `${pos.x}%`;
+      placed.style.top = `${pos.y}%`;
+      placed.style.transform = `translate(-50%, -50%) rotate(${rot.toFixed(1)}deg)`;
+
+      placed.innerHTML = `
+        <span class="diecut-icon">${itemData.icon}</span>
+        <span class="diecut-text">${itemData.word}</span>
+      `;
+
+      container.appendChild(placed);
+    }
+
+    /* WRONG ANSWER FLOW */
+    function handleWrongAnswer(stickerEl, itemData) {
+      // Deduct score gently & reset combo
+      if (STATE.score > 0) STATE.score = Math.max(0, STATE.score - 1);
+      STATE.combo = 0;
+      STATE.hearts -= 1;
+
+      // Track mistake
+      if (!STATE.mistakenWords.some(w => w.word === itemData.word)) {
+        STATE.mistakenWords.push(itemData);
+      }
+
+      // Shake sticker
+      stickerEl.classList.add('shake-animation');
+      setTimeout(() => stickerEl.classList.remove('shake-animation'), 500);
+
+      // Highlight ending consonant as a learning hint
+      highlightWordEnding(itemData.word, itemData.endingChar);
+
+      // Toast & mascot feedback
+      showToast("ยังไม่ใช่จ้า ลองสังเกตตัวสะกดท้ายคำดูนะ 😊", false);
+      setMascotSpeech(`คำว่า "${itemData.word}" ${itemData.hint || 'ลองดูตัวสะกดท้ายคำนะจ๊ะ'} ❤️`);
+
+      // Revert sticker position
+      revertStickerToTable(stickerEl, '');
+
+      updateStatsUI();
+
+      // Check Heart Loss
+      if (STATE.hearts <= 0) {
+        setTimeout(() => {
+          toggleModal('restModal', true);
+          if (STATE.mistakenWords.length > 0) {
+            document.getElementById('reviewBtnInRest').classList.remove('hidden');
+          }
+        }, 600);
+      }
+    }
+
+    /* HIGHLIGHT WORD ENDING IN RED TEMPORARILY */
+    function highlightWordEnding(word, endingChar) {
+      const textEl = document.getElementById(`sticker_word_${word}`);
+      if (!textEl || !endingChar) return;
+
+      const idx = word.lastIndexOf(endingChar);
+      if (idx !== -1) {
+        const prefix = word.substring(0, idx);
+        const ending = word.substring(idx, idx + endingChar.length);
+        const suffix = word.substring(idx + endingChar.length);
+        textEl.innerHTML = `${prefix}<span class="highlight-ending">${ending}</span>${suffix}`;
+
+        setTimeout(() => {
+          if (textEl) textEl.innerText = word;
+        }, 2200);
+      }
+    }
+    /* HINT BUTTON FUNCTION */
+    function useHint() {
+      if (STATE.hintsRemaining <= 0) {
+        showToast("หมดสิทธิ์ใช้คำใบ้แล้วจ้า! ลุยเองเลยน้า 💡", false);
+        return;
+      }
+
+      // Find first visible sticker on table
+      const visibleStickers = document.querySelectorAll('#stickerTableSurface .diecut-sticker');
+      if (visibleStickers.length === 0) return;
+
+      const firstSticker = visibleStickers[0];
+      const word = firstSticker.dataset.word;
+      const itemData = THAI_WORDS_DB.find(w => w.word === word);
+
+      if (!itemData) return;
+
+      STATE.hintsRemaining -= 1;
+      updateStatsUI();
+
+      highlightWordEnding(itemData.word, itemData.endingChar);
+
+      let hintMsg = "";
+      if (itemData.category === "แม่ ก กา") {
+        hintMsg = `💡 คำว่า "${itemData.word}" ไม่มีตัวสะกด อยู่ในแม่ ก กา จ้า!`;
+      } else {
+        hintMsg = `💡 ตัวสะกดท้ายคำ "${itemData.endingChar || itemData.word.slice(-1)}" ออกเสียงตรงกับ ${itemData.category}`;
+      }
+
+      setMascotSpeech(hintMsg);
+      showToast(hintMsg, true);
+    }
+
+    /* UPDATE STATS & PROGRESS BAR */
+    function updateStatsUI() {
+      document.getElementById('scoreText').innerText = STATE.score;
+
+      // Hearts
+      const heartsContainer = document.getElementById('heartsContainer');
+      heartsContainer.innerHTML = "";
+      for (let i = 0; i < 3; i++) {
+        const span = document.createElement("span");
+        span.innerText = i < STATE.hearts ? "❤️" : "🖤";
+        span.className = i < STATE.hearts ? "drop-shadow" : "opacity-40";
+        heartsContainer.appendChild(span);
+      }
+
+      // Hints
+      document.getElementById('hintCountBadge').innerText = STATE.hintsRemaining;
+
+      // Combo
+      const comboBadge = document.getElementById('comboBadge');
+      if (STATE.combo >= 2) {
+        comboBadge.innerText = `🔥 COMBO x${STATE.combo}`;
+        comboBadge.classList.remove('hidden');
+      } else {
+        comboBadge.classList.add('hidden');
+      }
+
+      // Progress bar
+      const progressPct = STATE.totalRoundWords > 0 
+        ? Math.min(100, Math.round((STATE.totalSuccess / STATE.totalRoundWords) * 100))
+        : 0;
+      document.getElementById('progressBar').style.width = `${progressPct}%`;
+    }
+
+    /* CHECK ROUND COMPLETION */
+    function checkRoundComplete() {
+      const remainingStickers = document.querySelectorAll('#stickerTableSurface .diecut-sticker');
+      if (STATE.queue.length === 0 && remainingStickers.length === 0 && STATE.totalSuccess > 0) {
+        setTimeout(showSummaryModal, 600);
+      }
+    }
+
+    /* SHOW SUMMARY MODAL */
+    function showSummaryModal() {
+      launchConfetti();
+      document.getElementById('summaryScore').innerText = STATE.score;
+      document.getElementById('summaryCombo').innerText = `x${STATE.maxCombo}`;
+      document.getElementById('summaryHints').innerText = `${3 - STATE.hintsRemaining} ครั้ง`;
+
+      const tbody = document.getElementById('summaryBreakdownTable');
+      tbody.innerHTML = "";
+
+      STATE.activeCategories.forEach(cat => {
+        const items = STATE.placedHistory[cat] || [];
+        const wordsStr = items.map(i => `${i.icon} ${i.word}`).join(', ') || "-";
+        const tr = document.createElement("tr");
+        tr.className = "border-b border-amber-100 hover:bg-amber-50";
+        tr.innerHTML = `
+          <td class="py-1.5 font-bold text-amber-950">${cat}</td>
+          <td class="py-1.5 text-center font-bold text-emerald-700">${items.length}</td>
+          <td class="py-1.5 text-slate-700">${wordsStr}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const reviewBtn = document.getElementById('reviewBtnInSummary');
+      if (STATE.mistakenWords.length > 0) {
+        reviewBtn.classList.remove('hidden');
+      } else {
+        reviewBtn.classList.add('hidden');
+      }
+
+      toggleModal('victoryModal', true);
+    }
+
+    /* REVIEW MISTAKEN WORDS MODE */
+    function reviewMistakesMode() {
+      toggleModal('victoryModal', false);
+      toggleModal('restModal', false);
+
+      if (STATE.mistakenWords.length === 0) return;
+
+      const wordsToReview = [...STATE.mistakenWords];
+      STATE.mistakenWords = [];
+      startFreshRound(wordsToReview);
+      setMascotSpeech("มาฝึกคำที่เราเคยสงสัยกันอีกรอบ สู้ ๆ นะจ๊ะ! 💪");
+    }
+
+    /* MASCOT SPEECH */
+    function setMascotSpeech(text) {
+      const el = document.getElementById('mascotSpeech');
+      if (el) el.innerText = text;
+    }
+
+    /* FLOATING TOAST */
+    function showToast(msg, isSuccess) {
+      const toast = document.getElementById('floatingToast');
+      const inner = document.getElementById('toastInner');
+
+      inner.innerText = msg;
+      if (isSuccess) {
+        inner.className = "px-6 py-3 rounded-2xl shadow-2xl font-display font-black text-base md:text-xl text-center border-4 bg-emerald-500 border-emerald-200 text-white";
+      } else {
+        inner.className = "px-6 py-3 rounded-2xl shadow-2xl font-display font-black text-base md:text-xl text-center border-4 bg-amber-600 border-amber-300 text-white";
+      }
+
+      toast.classList.remove('opacity-0', 'scale-75');
+      toast.classList.add('opacity-100', 'scale-100');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'scale-100');
+        toast.classList.add('opacity-0', 'scale-75');
+      }, 1600);
+    }
+
+    /* CANVAS CONFETTI EFFECT */
+    function launchConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 45,
+          spread: 60,
+          origin: { y: 0.65 }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
